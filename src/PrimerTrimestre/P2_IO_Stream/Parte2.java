@@ -3,40 +3,93 @@ package PrimerTrimestre.P2_IO_Stream;
 import java.io.*;
 
 public class Parte2 {
+    public static void main(String[] args) {
 
-    public static void copiarConBuffer(String origen, String destino) {
-        byte[] buffer = new byte[8192];
-        int bytesLeidos;
+        String rutaDirectorio = "/home/dam/Escritorio/AD/src/PrimerTrimestre/P2_IO_Stream/";
+        String nombreImagenOrigen = "foto.jpg";
+        String nombreImagenDestino = "foto2.jpg";
 
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(origen));
-             BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(destino))) {
+        // Copiar byte a byte
+        copiarImagen(rutaDirectorio, nombreImagenOrigen, nombreImagenDestino);
 
-            while ((bytesLeidos = bis.read(buffer)) != -1) {
-                bos.write(buffer, 0, bytesLeidos);
+
+        // Añadir el contenido de foto.jpg a imagen2.jpg
+        añadirImagen(rutaDirectorio, nombreImagenOrigen, nombreImagenDestino);
+
+        // Copia la imagen con el Buffered para ganar velocidad
+        copiarImagenBuffered(rutaDirectorio, nombreImagenOrigen, nombreImagenDestino);
+    }
+
+    // Método que copia byte a byte
+    public static void copiarImagen(String rutaDirectorio, String nombreFicheroOrigen, String nombreFicheroDestino) {
+        File origen = new File(rutaDirectorio, nombreFicheroOrigen);
+        File destino = new File(rutaDirectorio, nombreFicheroDestino);
+
+        // Comprobamos si existe el fichero origen
+        if (!origen.exists()) {
+            System.out.println("El fichero origen no existe.");
+            return;
+        }
+
+        try (
+                FileInputStream fis = new FileInputStream(origen);
+                FileOutputStream fos = new FileOutputStream(destino)
+        ) {
+            int byteLeido;
+            // Leemos un byte y lo escribimos en el fichero destino
+            while ((byteLeido = fis.read()) != -1) {
+                fos.write(byteLeido);
             }
-
-            System.out.println("Imagen copiada de " + origen + " a " + destino);
-
+            System.out.println("Copia realizada correctamente");
         } catch (IOException e) {
-            System.err.println("Error copiando el archivo: " + e.getMessage());
+            System.out.println("Ocurrió un error al copiar el fichero: " + e.getMessage());
         }
     }
 
-    public static void main(String[] args) {
-        String rutaBase = "/home/dam/Escritorio/AD/src/PrimerTrimestre/P2_IO_Stream/";
-        String foto1 = rutaBase + "foto.jpg";
-        String foto2 = rutaBase + "foto2.jpg";
+    // Método que añade el contenido del fichero origen al fichero destino
+    public static void añadirImagen(String rutaDirectorio, String nombreFicheroOrigen, String nombreFicheroDestino) {
+        File origen = new File(rutaDirectorio, nombreFicheroOrigen);
+        File destino = new File(rutaDirectorio, nombreFicheroDestino);
 
-        long inicio = System.currentTimeMillis();
-        copiarConBuffer(foto1, foto2);
-        long fin = System.currentTimeMillis();
+        if (!origen.exists()) {
+            System.out.println("El fichero origen no existe.");
+            return;
+        }
 
-        System.out.println("Tiempo de copia: " + (fin - inicio) + " ms");
+        try (FileInputStream fis = new FileInputStream(origen);
+             FileOutputStream fos = new FileOutputStream(destino, true)) {
 
-        File archivo1 = new File(foto1);
-        File archivo2 = new File(foto2);
-        System.out.println("Tamaño de foto.jpg: " + archivo1.length() + " bytes");
-        System.out.println("Tamaño de foto2.jpg: " + archivo2.length() + " bytes");
-        System.out.println("¿Archivos iguales en tamaño? " + (archivo1.length() == archivo2.length()));
+            int byteLeido;
+            while ((byteLeido = fis.read()) != -1) {
+                fos.write(byteLeido);
+            }
+            System.out.println("Contenido añadido correctamente");
+        } catch (IOException e) {
+            System.out.println("Ocurrió un error al añadir el contenido: " + e.getMessage());
+        }
+    }
+
+    //Metodo que copia la imagen con BufferedStream para aumentar la velocidad del proceso
+    public static void copiarImagenBuffered(String rutaDirectorio, String nombreFicheroOrigen, String nombreFicheroDestino) {
+        File origen = new File(rutaDirectorio, nombreFicheroOrigen);
+        File destino = new File(rutaDirectorio, nombreFicheroDestino);
+
+        if (!origen.exists()) {
+            System.out.println("El fichero origen no existe.");
+            return;
+        }
+
+        try (
+                BufferedInputStream bis = new BufferedInputStream(new FileInputStream(origen));
+                BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(destino))
+        ) {
+            int byteLeido;
+            while ((byteLeido = bis.read()) != -1) {
+                bos.write(byteLeido);
+            }
+            System.out.println("Copia con BufferedStreams realizada correctamente");
+        } catch (IOException e) {
+            System.out.println("Ocurrió un error: " + e.getMessage());
+        }
     }
 }
